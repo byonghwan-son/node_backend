@@ -1,6 +1,6 @@
 const MongoClient = require('mongodb').MongoClient;
 
-const url = 'mongodb://localhost:27017/?retryWrites=true&loadBalanced=false&connectTimeoutMS=10000';
+const url = 'mongodb://127.0.0.1:27017/?retryWrites=true&loadBalanced=false&connectTimeoutMS=10000';
 
 const client = new MongoClient(url);
 

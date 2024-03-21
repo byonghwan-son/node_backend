@@ -11,7 +11,7 @@ const app = express()
 app.use(bodyParser.json());
 app.listen(3000, async () => {
   console.log('Server started!!')
-  const mongodbUrl = 'mongodb://localhost:27017/?retryWrites=true&loadBalanced=false&connectTimeoutMS=10000'
+  const mongodbUrl = 'mongodb://127.0.0.1:27017/?retryWrites=true&loadBalanced=false&connectTimeoutMS=10000'
   mongoose
     .connect(mongodbUrl)
     .then(() => console.log('Connected to MongoDB'))
