@@ -1,3 +1,6 @@
+const paginator = require("../utils/paginator")
+const ObjectId = require("mongodb").ObjectId
+
 async function writePost(collection, post) {
   post.hits = 0;
   post.createdDt = new Date().toISOString();
@@ -6,10 +9,36 @@ async function writePost(collection, post) {
 
 async function list(collection, page, search) {
 
-  return await collection.find({});
+  const perPage = 10
+  const query = { title: new RegExp(search, "i") }
+  const cursor = collection.find(query, { limit: perPage, skip: (page - 1) * perPage })
+    .sort({ createDt: -1 })
+
+  const totalCount = await collection.count(query)
+  const posts = await cursor.toArray()
+  const paginatorObj = paginator({totalCount, page, perPage: perPage})
+
+  return [posts, paginatorObj]
+}
+
+const projectionOption = {
+  projection: {
+    password: 0,
+    "comments.password": 0
+  }
+}
+
+async function getDetailPost(collection, id) {
+  const result = await collection.findOneAndUpdate(
+    { _id: new ObjectId(id) },
+    { $inc: { hits: 1 } },
+    projectionOption
+  );
+  return result
 }
 
 module.exports = {
   writePost,
-  list
+  list,
+  getDetailPost
 }
