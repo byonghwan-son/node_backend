@@ -1,14 +1,18 @@
-<h1>[{{title}}] 글 작성</h1>
+<h1>[{{title}}] 글 {{#if (eq mode 'create')}}작성{{else}}수정{{/if}}</h1>
 
 <div>
-  <form name="boardForm" method="post" action="/write">
+  <form name="boardForm" method="post" {{#if (eq mode 'create')}} action="/write" {{else}} action="/modify" {{/if}}>
+    <!-- 수정 모드일 때 id값 을 통해서 전송하기 위해 숨김 컨트롤 활용 -->
+    {{#if (eq mode 'modify')}}
+      <input type="hidden" name="id" value="{{post._id}}" />
+    {{/if}}
     <div>
       <label for="title">제목</label>
-      <input type="text" id="title" name="title" placeholder="제목을 넣어주세요" value="" />
+      <input type="text" id="title" name="title" placeholder="제목을 넣어주세요" value="{{post.title}}" />
     </div>
     <div>
       <label for="writer">이름</label>
-      <input type="text" id="writer" name="writer" placeholder="이름을 넣어주세요" value="" />
+      <input type="text" id="writer" name="writer" placeholder="이름을 넣어주세요" value="{{post.writer}}" />
     </div>
     <div>
       <label for="password">비밀번호</label>
@@ -16,7 +20,7 @@
     </div>
     <div>
       <label for="content">본문을 입력하세요</label><br />
-      <textarea id="content" name="content" placeholder="본문" cols="50" rows="10"></textarea>
+      <textarea id="content" name="content" placeholder="본문" cols="50" rows="10">{{post.content}}</textarea>
     </div>
     <div>
       <button type="submit">저장</button>
