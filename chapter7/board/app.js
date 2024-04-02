@@ -8,6 +8,8 @@ app.use(express.urlencoded({extended: true}))
 
 const mongodbConnection = require("./configs/mongodb-connection")
 const postService = require('./services/post-service')
+const {ObjectId} = require("mongodb");
+let collection
 
 app.engine('handlebars', handlebars.create(
   {
@@ -83,7 +85,22 @@ app.post("/modify/", async (req, res) => {
   res.redirect(`/detail/${id}`)
 })
 
-let collection
+app.delete('/delete', async (req, res) => {
+  const {id, password} = req.body
+
+  try {
+    const result = await collection.deleteOne({ _id: new ObjectId(id), password: password })
+    if(result.deletedCount !== 1) {
+      console.log('삭제 실패')
+      return res.json({ isSuccess: false })
+    }
+    return res.json({ isSuccess: true })
+  } catch (error) {
+    console.error(error)
+    return res.json( { isSuccess: false })
+  }
+})
+
 app.listen(3000, async () => {
   console.log('Server Started')
   const mongoClient = await mongodbConnection()
