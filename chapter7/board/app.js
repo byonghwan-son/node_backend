@@ -61,13 +61,13 @@ app.post('/check-password', async (req, res) => {
 })
 
 app.get("/write", (req, res) => {
-  res.render("write", { title: "테스트 게시판", mode: "create"})
+  res.render("write", {title: "테스트 게시판", mode: "create"})
 })
 
 app.get("/modify/:id", async (req, res) => {
   const post = await postService.getPostById(collection, req.params.id)
   console.log(post)
-  res.render("write", { title: '테스트 게시판', mode: 'modify', post});
+  res.render("write", {title: '테스트 게시판', mode: 'modify', post});
 })
 
 app.post("/modify/", async (req, res) => {
@@ -89,16 +89,64 @@ app.delete('/delete', async (req, res) => {
   const {id, password} = req.body
 
   try {
-    const result = await collection.deleteOne({ _id: new ObjectId(id), password: password })
-    if(result.deletedCount !== 1) {
+    const result = await collection.deleteOne({_id: new ObjectId(id), password: password})
+    if (result.deletedCount !== 1) {
       console.log('삭제 실패')
-      return res.json({ isSuccess: false })
+      return res.json({isSuccess: false})
     }
-    return res.json({ isSuccess: true })
+    return res.json({isSuccess: true})
   } catch (error) {
     console.error(error)
-    return res.json( { isSuccess: false })
+    return res.json({isSuccess: false})
   }
+})
+
+app.post('/write-comment', async (req, res) => {
+  const {id, name, password, comment} = req.body
+  const post = await postService.getPostById(collection, id)
+
+  if (post.comments) {
+    post.comments.push({
+      idx: post.comments.length + 1,
+      name,
+      password,
+      comment,
+      createdDt: new Date().toISOString()
+    })
+  } else {
+    post.comments = [
+      {
+        idx: 1,
+        name,
+        password,
+        comment,
+        createdDt: new Date().toISOString()
+      }
+    ]
+  }
+
+  await postService.updatePost(collection, id, post);
+  return res.redirect(`/detail/${id}`)
+})
+
+app.delete('/delete-comment', async (req, res) => {
+  const {id, idx, password} = req.body
+
+  const post = await collection.findOne(
+    {
+      _id: new ObjectId(id),
+      comments: {$elemMatch: {idx: parseInt(idx), password}}
+    },
+    postService.projectionOption
+  )
+
+  if (!post) {
+    return res.json({isSuccess: false})
+  }
+
+  post.comments = post.comments.filter((comment) => comment.idx !== idx)
+  await postService.updatePost(collection, id, post)
+  return res.json({isSuccess: true})
 })
 
 app.listen(3000, async () => {
