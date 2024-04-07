@@ -4,11 +4,9 @@ import { PostDto } from './blog.model';
 
 @Controller('blog')
 export class BlogController {
-  blogService: BlogService
+  // blogService: BlogService
 
-  constructor() {
-    this.blogService = new BlogService();
-  }
+  constructor(private blogService: BlogService) {}
 
   @Get()
   getAllPosts() {
@@ -24,9 +22,9 @@ export class BlogController {
   }
 
   @Get('/:id')
-  getPost(@Param('id') id: string) : PostDto {
+  async getPost(@Param('id') id: string): Promise<PostDto> {
     console.log(`[id: ${id}] 게시글 하나 가져오기`)
-    return this.blogService.getPost(id)
+    return await this.blogService.getPost(id)
   }
 
   @Delete('/:id')

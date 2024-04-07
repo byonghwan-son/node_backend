@@ -1,15 +1,20 @@
 import { readFile, writeFile } from 'fs/promises';
 import { PostDto } from './blog.model';
+import { Injectable } from '@nestjs/common';
+import { Model, Promise } from 'mongoose';
+import { InjectModel } from '@nestjs/mongoose';
+import { Blog, BlogDocument } from './blog.mongoose';
 
-export interface BlogRepository {
-  getAllPost(): Promise<PostDto[]>;
-  createPost(post: PostDto): void;
-  getPost(id: string): Promise<PostDto>;
+export interface BlogRepository<T> {
+  getAllPost(): Promise<T[]>;
+  createPost(post: T): void;
+  getPost(id: string): Promise<T>;
   deletePost(id: string): void;
-  updatePost(post: PostDto, id: string): void;
+  updatePost(id: string, post: T): void;
 }
 
-export class BlogFileRepository implements BlogRepository {
+@Injectable()
+export class BlogFileRepository implements BlogRepository<PostDto> {
   FILE_NAME = './src/blog.data.json'
 
   async createPost(post: PostDto): Promise<void> {
@@ -40,11 +45,43 @@ export class BlogFileRepository implements BlogRepository {
     return posts.find((post) => post.id === id)
   }
 
-  async updatePost(post: PostDto, id: string): Promise<void> {
+  async updatePost(id: string, post: PostDto): Promise<void> {
     const posts = await this.getAllPost()
     const index = posts.findIndex((post) => post.id === id)
     posts[index] = { id, ...post, updatedDt: new Date() }
     await writeFile(this.FILE_NAME, JSON.stringify(posts))
   }
+
+}
+
+@Injectable()
+export class BlogMongoRepository implements BlogRepository<Blog> {
+
+  constructor(@InjectModel(Blog.name) private blogModel: Model<BlogDocument>) { }
+
+  async createPost(post: Blog): Promise<void> {
+    const createPost = {
+      ...post
+    }
+    await this.blogModel.create(createPost)
+  }
+
+  deletePost(id: string): void {
+  }
+
+  async getAllPost(): Promise<Blog[]> {
+    return await this.blogModel.find().exec()
+  }
+
+  async getPost(id: string): Promise<Blog> {
+    return this.blogModel.findById(id);
+  }
+
+  async updatePost(id: string, post: Blog): Promise<void> {
+    const updatePost = { id, ...post, updatedDt: new Date() }
+    await this.blogModel.findByIdAndUpdate(id, updatePost)
+  }
+
+
 
 }

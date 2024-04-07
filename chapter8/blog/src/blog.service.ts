@@ -1,42 +1,31 @@
 import { PostDto } from './blog.model';
-import { BlogFileRepository, BlogRepository } from './blog.repository';
+import { BlogFileRepository } from './blog.repository';
+import { Injectable } from '@nestjs/common';
 
+@Injectable()
 export class BlogService {
-  posts: PostDto[] = []
-  // blogRepository: BlogRepository;
+  //posts: PostDto[] = []
+  //blogRepository: BlogRepository;
 
-  constructor() {
-    // this.blogRepository = new BlogFileRepository();
-  }
+  constructor(private blogRepository: BlogFileRepository) {}
 
-  getAllPosts(): PostDto[] {
-    return this.posts
+  async getAllPosts(): Promise<PostDto[]> {
+    return await this.blogRepository.getAllPost()
   }
 
   createPost(postDto : PostDto) : void {
-    const id : number = this.posts.length + 1;
-    this.posts.push({
-      id: id.toString(),
-      ...postDto,
-      createdDt: new Date()
-    });
+    this.blogRepository.createPost(postDto)
   }
 
-  getPost(id) : PostDto {
-    const post = this.posts.find((post) => post.id === id)
-    console.log(post)
-    return post
+  async getPost(id: string): Promise<PostDto> {
+    return await this.blogRepository.getPost(id);
   }
 
-  delete(id: string) : void {
-    const filteredPosts = this.posts.filter((post) => post.id !== id)
-    this.posts = [...filteredPosts]
+  delete(id: string): void {
+    this.blogRepository.deletePost(id);
   }
 
-  updatePost(id: string, postDto: PostDto) : PostDto {
-    let updatedIndex = this.posts.findIndex((post) => post.id === id)
-    const updatePost : PostDto = {id, ...postDto, updatedDt: new Date()};
-    this.posts[updatedIndex] = updatePost
-    return updatePost
+  updatePost(id: string, postDto: PostDto) : void {
+    this.blogRepository.updatePost(id, postDto)
   }
 }
