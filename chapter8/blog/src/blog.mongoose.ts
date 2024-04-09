@@ -5,12 +5,12 @@ export type BlogDocument = Blog & Document;
 
 @Schema()
 export class Blog {
-  @Prop({ required: true}) id: string
+  @Prop() id: string
   @Prop() title: string
   @Prop() content: string
   @Prop() name: string
   @Prop() description: string
-  @Prop() CreatedDt: Date
+  @Prop() createdDt: Date
   @Prop() updatedDt: Date
 }
 

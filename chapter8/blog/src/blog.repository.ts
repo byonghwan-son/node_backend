@@ -61,12 +61,14 @@ export class BlogMongoRepository implements BlogRepository<Blog> {
 
   async createPost(post: Blog): Promise<void> {
     const createPost = {
-      ...post
+      ...post,
+      createdDt: new Date()
     }
     await this.blogModel.create(createPost)
   }
 
-  deletePost(id: string): void {
+  async deletePost(id: string): Promise<void> {
+    await this.blogModel.findByIdAndDelete(id);
   }
 
   async getAllPost(): Promise<Blog[]> {
@@ -78,7 +80,7 @@ export class BlogMongoRepository implements BlogRepository<Blog> {
   }
 
   async updatePost(id: string, post: Blog): Promise<void> {
-    const updatePost = { id, ...post, updatedDt: new Date() }
+    const updatePost = { ...post, updatedDt: new Date() }
     await this.blogModel.findByIdAndUpdate(id, updatePost)
   }
 
